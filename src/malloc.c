@@ -18,13 +18,21 @@ static zone_type get_zone_type(size_t size) {
 
 static size_t get_zone_size(zone_type type, size_t size) {
     size_t page_size = getpagesize();
-    if (type == TINY || type == SMALL)
-        return page_size * MIN_ZONE_ALLOC;
-    if (type == LARGE)
-        return sizeof(t_block) + size;
-    return 0;
-}
+    size_t raw_zone_size;
 
+    if (type == TINY) {
+        raw_zone_size = sizeof(t_zone) + MIN_ZONE_ALLOC * (sizeof(t_block) + TINY_LIMIT);
+    } else if (type == SMALL) {
+        raw_zone_size = sizeof(t_zone) + MIN_ZONE_ALLOC * (sizeof(t_block) + SMALL_LIMIT);
+    } else if (type == LARGE) {
+        return sizeof(t_block) + size;
+    } else {
+        return 0;
+    }
+
+    size_t pages = (raw_zone_size + page_size - 1) / page_size;
+    return pages * page_size;
+}
 static t_block *find_free_block(t_zone *zone, size_t size) {
     t_block *block = zone->blocks;
     while (block) {
