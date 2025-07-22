@@ -36,11 +36,11 @@ run: $(MAIN_EXEC)
 	DYLD_LIBRARY_PATH=.:$$DYLD_LIBRARY_PATH ./$(MAIN_EXEC)
 
 clean:
-	rm -f $(OBJS) $(MAIN_EXEC)
+	rm -f $(OBJS) $(MAIN_EXEC) 
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
-	rm -f $(NAME) $(SYMLINK)
+	rm -f $(NAME) $(SYMLINK) $(LIBFT)
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
