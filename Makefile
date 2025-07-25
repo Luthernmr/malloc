@@ -1,7 +1,7 @@
 NAME = libft_malloc_$(HOSTTYPE).so
 SYMLINK = libft_malloc.so
 CC = gcc
-CFLAGS =  -fPIC -Iincludes
+CFLAGS = -Wall -Wextra -Werror -fPIC -Iincludes
 SRCS = src/malloc.c src/free.c src/realloc.c
 OBJS = $(SRCS:src/%.c=%.o)
 LIBFT_DIR = ./libft
