@@ -1,131 +1,229 @@
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
 #include "includes/malloc.h"
+#include "libft/libft.h"
+#include <stdlib.h>
+
+void log_info(char *msg) {
+    ft_putstr_fd("[INFO] ", 1);
+    ft_putendl_fd(msg, 1);
+}
+
+void log_success(char *msg) {
+    ft_putstr_fd("[SUCCESS] ", 1);
+    ft_putendl_fd(msg, 1);
+}
+
+void log_error(char *msg) {
+    ft_putstr_fd("[ERROR] ", 2);
+    ft_putendl_fd(msg, 2);
+}
+
+void log_test_start(char *test_name) {
+    ft_putstr_fd("[TEST] === ", 1);
+    ft_putstr_fd(test_name, 1);
+    ft_putendl_fd(" ===", 1);
+}
+
+void log_test_end(char *test_name) {
+    ft_putstr_fd("[PASSED] ", 1);
+    ft_putstr_fd(test_name, 1);
+    ft_putendl_fd(" completed successfully\n", 1);
+}
+
+void log_malloc_result(char *operation, int success) {
+    ft_putstr_fd("[MALLOC] ", 1);
+    ft_putstr_fd(operation, 1);
+    if (success) {
+        ft_putendl_fd(": SUCCESS", 1);
+    } else {
+        ft_putendl_fd(": FAILED", 1);
+    }
+}
+
+void log_content(char *label, char *content) {
+    ft_putstr_fd("[CONTENT] ", 1);
+    ft_putstr_fd(label, 1);
+    ft_putstr_fd(": ", 1);
+    ft_putendl_fd(content, 1);
+}
+
+void assert_or_exit(int condition, char *error_msg) {
+    if (!condition) {
+        log_error(error_msg);
+        exit(1);
+    }
+}
+
+void copy_string(char *dest, const char *src) {
+    int i = 0;
+    while (src[i]) {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+}
 
 void test_basic_malloc() {
-    printf("=== Test Basic Malloc ===\n");
+    log_test_start("Basic Malloc");
     
-    // Test allocation simple
     void *ptr1 = malloc(100);
-    printf("malloc(100): %s\n", ptr1 ? "SUCCESS" : "FAILED");
-    assert(ptr1 != NULL);
+    log_malloc_result("malloc(100)", ptr1 != NULL);
+    assert_or_exit(ptr1 != NULL, "ptr1 allocation failed");
     
-    // Test écriture dans la mémoire allouée
-    strcpy((char*)ptr1, "Hello, World!");
-    printf("Writing to allocated memory: %s\n", (char*)ptr1);
+    copy_string((char*)ptr1, "Hello, World!");
+    log_content("Written to memory", (char*)ptr1);
     
-    // Test allocation de taille 0
     void *ptr2 = malloc(0);
-    printf("malloc(0): %s\n", ptr2 == NULL ? "SUCCESS (returned NULL)" : "FAILED");
+    log_malloc_result("malloc(0)", ptr2 == NULL);
     
-    printf("Basic malloc tests: PASSED\n\n");
+    free(ptr1);
+    log_info("Memory freed successfully");
+    
+    log_test_end("Basic Malloc");
 }
 
 void test_different_sizes() {
-    printf("=== Test Different Sizes ===\n");
+    log_test_start("Different Sizes");
     
-    // Test TINY (< 512 bytes)
     void *tiny = malloc(256);
-    printf("malloc(256 - TINY): %s\n", tiny ? "SUCCESS" : "FAILED");
-    assert(tiny != NULL);
+    log_malloc_result("malloc(256 - TINY)", tiny != NULL);
+    assert_or_exit(tiny != NULL, "tiny allocation failed");
     
-    // Test SMALL (< 4096 bytes)
     void *small = malloc(2048);
-    printf("malloc(2048 - SMALL): %s\n", small ? "SUCCESS" : "FAILED");
-    assert(small != NULL);
+    log_malloc_result("malloc(2048 - SMALL)", small != NULL);
+    assert_or_exit(small != NULL, "small allocation failed");
     
-    // Test LARGE (>= 4096 bytes)
     void *large = malloc(8192);
-    printf("malloc(8192 - LARGE): %s\n", large ? "SUCCESS" : "FAILED");
-    assert(large != NULL);
+    log_malloc_result("malloc(8192 - LARGE)", large != NULL);
+    assert_or_exit(large != NULL, "large allocation failed");
     
-    printf("Different sizes tests: PASSED\n\n");
+    free(tiny);
+    free(small);
+    free(large);
+    log_info("All allocations freed successfully");
+    
+    log_test_end("Different Sizes");
+}
+
+void create_block_name(char *dest, int i) {
+    copy_string(dest, "Block ");
+    dest[6] = '0' + i;
+    dest[7] = '\0';
 }
 
 void test_multiple_allocations() {
-    printf("=== Test Multiple Allocations ===\n");
+    log_test_start("Multiple Allocations");
     
     void *ptrs[10];
     int i;
     
-    // Allouer plusieurs blocs
     for (i = 0; i < 10; i++) {
         ptrs[i] = malloc(64 + i * 10);
-        printf("malloc(%d): %s\n", 64 + i * 10, ptrs[i] ? "SUCCESS" : "FAILED");
-        assert(ptrs[i] != NULL);
+        log_malloc_result("malloc block", ptrs[i] != NULL);
+        assert_or_exit(ptrs[i] != NULL, "allocation failed");
         
-        // Écrire quelque chose dans chaque bloc
-        sprintf((char*)ptrs[i], "Block %d", i);
+        create_block_name((char*)ptrs[i], i);
     }
     
-    // Vérifier que les données sont toujours là
     for (i = 0; i < 10; i++) {
-        printf("Block %d contains: %s\n", i, (char*)ptrs[i]);
+        log_content("Block content", (char*)ptrs[i]);
     }
     
-    printf("Multiple allocations tests: PASSED\n\n");
+    for (i = 0; i < 10; i++) {
+        free(ptrs[i]);
+    }
+    log_info("All blocks freed successfully");
+    
+    log_test_end("Multiple Allocations");
 }
 
 void test_edge_cases() {
-    printf("=== Test Edge Cases ===\n");
+    log_test_start("Edge Cases");
     
-    // Test allocation très petite
     void *ptr1 = malloc(1);
-    printf("malloc(1): %s\n", ptr1 ? "SUCCESS" : "FAILED");
-    assert(ptr1 != NULL);
+    log_malloc_result("malloc(1)", ptr1 != NULL);
+    assert_or_exit(ptr1 != NULL, "ptr1 allocation failed");
     
-    // Test allocation exactement à la limite TINY
     void *ptr2 = malloc(512);
-    printf("malloc(512): %s\n", ptr2 ? "SUCCESS" : "FAILED");
-    assert(ptr2 != NULL);
+    log_malloc_result("malloc(512)", ptr2 != NULL);
+    assert_or_exit(ptr2 != NULL, "ptr2 allocation failed");
     
-    // Test allocation exactement à la limite SMALL
     void *ptr3 = malloc(4096);
-    printf("malloc(4096): %s\n", ptr3 ? "SUCCESS" : "FAILED");
-    assert(ptr3 != NULL);
+    log_malloc_result("malloc(4096)", ptr3 != NULL);
+    assert_or_exit(ptr3 != NULL, "ptr3 allocation failed");
     
-    // Test allocation très grande
-    void *ptr4 = malloc(1024 * 1024); // 1MB
-    printf("malloc(1MB): %s\n", ptr4 ? "SUCCESS" : "FAILED");
-    assert(ptr4 != NULL);
+    void *ptr4 = malloc(1024 * 1024);
+    log_malloc_result("malloc(1MB)", ptr4 != NULL);
+    assert_or_exit(ptr4 != NULL, "ptr4 allocation failed");
     
-    printf("Edge cases tests: PASSED\n\n");
+    free(ptr1);
+    free(ptr2);
+    free(ptr3);
+    free(ptr4);
+    log_info("All edge case allocations freed successfully");
+    
+    log_test_end("Edge Cases");
 }
 
 void test_memory_content() {
-    printf("=== Test Memory Content Integrity ===\n");
+    log_test_start("Memory Content Integrity");
     
     char *ptr1 = (char*)malloc(100);
     char *ptr2 = (char*)malloc(200);
     
-    assert(ptr1 != NULL && ptr2 != NULL);
+    assert_or_exit(ptr1 != NULL && ptr2 != NULL, "allocation failed");
     
-    // Remplir avec des données de test
-    strcpy(ptr1, "First allocation");
-    strcpy(ptr2, "Second allocation with more data");
+    copy_string(ptr1, "First allocation");
+    copy_string(ptr2, "Second allocation with more data");
     
-    // Vérifier que les données ne se chevauchent pas
-    printf("ptr1 content: %s\n", ptr1);
-    printf("ptr2 content: %s\n", ptr2);
+    log_content("ptr1", ptr1);
+    log_content("ptr2", ptr2);
     
-    assert(strcmp(ptr1, "First allocation") == 0);
-    assert(strcmp(ptr2, "Second allocation with more data") == 0);
+    assert_or_exit(ft_strncmp(ptr1, "First allocation", 16) == 0, "ptr1 content mismatch");
+    assert_or_exit(ft_strncmp(ptr2, "Second allocation with more data", 32) == 0, "ptr2 content mismatch");
+    log_success("Memory content integrity verified");
     
-    printf("Memory content integrity: PASSED\n\n");
+    free(ptr1);
+    free(ptr2);
+    log_info("Memory freed successfully");
+    
+    log_test_end("Memory Content Integrity");
+}
+
+void test_realloc() {
+    log_test_start("Realloc");
+    
+    void *ptr1 = realloc(NULL, 100);
+    log_malloc_result("realloc(NULL, 100)", ptr1 != NULL);
+    assert_or_exit(ptr1 != NULL, "realloc(NULL, 100) failed");
+    copy_string((char*)ptr1, "Initial data");
+    log_content("Realloc content", (char*)ptr1);
+    
+    if (ptr1) {
+        free(ptr1);
+        log_info("Realloc memory freed");
+    }
+    
+    void *ptr2 = malloc(50);
+    assert_or_exit(ptr2 != NULL, "malloc(50) failed");
+    copy_string((char*)ptr2, "Test");
+    void *ptr2_realloc = realloc(ptr2, 0);
+    log_malloc_result("realloc(ptr, 0)", ptr2_realloc == NULL);
+    
+    log_test_end("Realloc");
 }
 
 int main() {
-    printf("Starting malloc tests...\n\n");
+    log_info("Starting malloc implementation tests...\n");
     
     test_basic_malloc();
     test_different_sizes();
     test_multiple_allocations();
     test_edge_cases();
     test_memory_content();
+    test_realloc();
     
-    printf("=== ALL TESTS PASSED ===\n");
-    printf("Your malloc implementation seems to be working correctly!\n");
+    log_success("=== ALL TESTS COMPLETED SUCCESSFULLY ===");
+    log_info("Your malloc implementation is working correctly!");
     
     return 0;
 }

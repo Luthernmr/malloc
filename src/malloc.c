@@ -25,7 +25,7 @@ static size_t get_zone_size(zone_type type, size_t size) {
     } else if (type == SMALL) {
         raw_zone_size = sizeof(t_zone) + MIN_ZONE_ALLOC * (sizeof(t_block) + SMALL_LIMIT);
     } else if (type == LARGE) {
-        return sizeof(t_block) + size;
+        return sizeof(t_zone) + sizeof(t_block) + size;
     } else {
         return 0;
     }

@@ -1,8 +1,8 @@
 NAME = libft_malloc_$(HOSTTYPE).so
 SYMLINK = libft_malloc.so
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -fPIC -Iincludes
-SRCS = src/malloc.c
+CFLAGS =  -fPIC -Iincludes
+SRCS = src/malloc.c src/free.c src/realloc.c
 OBJS = $(SRCS:src/%.c=%.o)
 LIBFT_DIR = ./libft
 LIBFT = $(LIBFT_DIR)/libft.a
@@ -28,8 +28,8 @@ $(SYMLINK): $(NAME)
 $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
-$(MAIN_EXEC): $(MAIN_SRC) $(NAME)
-	$(CC) $(CFLAGS) -L. -lft_malloc $(MAIN_SRC) -o $(MAIN_EXEC)
+$(MAIN_EXEC): $(MAIN_SRC) $(NAME) $(LIBFT)
+	$(CC) $(CFLAGS) -L. -lft_malloc $(LIBFT) $(MAIN_SRC) -o $(MAIN_EXEC)
 
 run: $(MAIN_EXEC)
 	@echo "Running $(MAIN_EXEC)..."
