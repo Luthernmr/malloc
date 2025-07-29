@@ -1,9 +1,5 @@
 #include "malloc.h"
 
-#define MIN_ZONE_ALLOC 100
-#define TINY_LIMIT   512
-#define SMALL_LIMIT  4096
-
 extern pthread_mutex_t g_malloc_mutex;
 extern t_zone *g_zones[3];
 
@@ -83,6 +79,9 @@ static void free_block(void *ptr) {
 void free(void *ptr) {
     if (!ptr)
         return;
+
+    // Ajouter à l'historique avant de libérer
+    add_to_history(ptr, 0, 'F');
 
     pthread_mutex_lock(&g_malloc_mutex);
     free_block(ptr);

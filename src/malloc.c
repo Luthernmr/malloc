@@ -1,9 +1,5 @@
 #include "malloc.h"
 
-#define TINY_LIMIT   512
-#define SMALL_LIMIT  4096
-#define MIN_ZONE_ALLOC 100
-
 pthread_mutex_t g_malloc_mutex = PTHREAD_MUTEX_INITIALIZER;
 t_zone *g_zones[3] = {NULL, NULL, NULL}; // TINY, SMALL, LARGE
 t_block *g_free_blocks_list = NULL;
@@ -100,6 +96,12 @@ void *malloc(size_t size) {
     }
 
     void *ptr = allocate_block(zone, block, size);
+    
+    // Ajouter à l'historique
+    if (ptr) {
+        add_to_history(ptr, size, 'M');
+    }
+    
     pthread_mutex_unlock(&g_malloc_mutex);
     return ptr;
 }

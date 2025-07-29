@@ -55,5 +55,8 @@ void *realloc(void *ptr, size_t size) {
     memcpy(new_ptr, ptr, block->size);
     free(ptr);
 
+    // Ajouter à l'historique
+    add_to_history(new_ptr, size, 'R');
+
     return new_ptr;
 }
